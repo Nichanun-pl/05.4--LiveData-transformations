@@ -97,11 +97,28 @@ class GameViewModel : ViewModel() {
     }
 
     init {
-        _word.value = ""
-        _score.value = 0
-        Log.i("GameViewModel", "GameViewModel created!")
-        resetList()
-        nextWord()
+// Creates a timer which triggers the end of the game when it finishes
+        timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND) {
+
+            override fun onTick(millisUntilFinished: Long) {
+
+            }
+
+            override fun onFinish() {
+
+            }
+        }
+
+        timer.start()
+    }
+
+    override fun onTick(millisUntilFinished: Long) {
+        _currentTime.value = millisUntilFinished / ONE_SECOND
+    }
+
+    override fun onFinish() {
+        _currentTime.value = DONE
+        onGameFinish()
     }
 
     /**
@@ -109,7 +126,8 @@ class GameViewModel : ViewModel() {
      */
     override fun onCleared() {
         super.onCleared()
-        Log.i("GameViewModel", "GameViewModel destroyed!")
+        // Cancel the timer
+        timer.cancel()
     }
 
     /** Methods for updating the UI **/
@@ -117,6 +135,7 @@ class GameViewModel : ViewModel() {
         _score.value = (_score.value)?.minus(1)
         nextWord()
     }
+
     fun onCorrect() {
         _score.value = (_score.value)?.plus(1)
         nextWord()
@@ -126,25 +145,24 @@ class GameViewModel : ViewModel() {
      * Moves to the next _word in the list.
      */
     private fun nextWord() {
+        // Shuffle the word list, if the list is empty
         if (wordList.isEmpty()) {
-            onGameFinish()
-
+            resetList()
         } else {
-            //Select and remove a _word from the list
+            // Remove a word from the list
             _word.value = wordList.removeAt(0)
         }
+
+
+
+        /** Method for the game completed event **/
+
+        fun onGameFinishComplete() {
+            _eventGameFinish.value = false
+        }
+
+        fun onGameFinish() {
+            _eventGameFinish.value = true
+        }
     }
-
-
-
-    /** Method for the game completed event **/
-
-    fun onGameFinishComplete() {
-        _eventGameFinish.value = false
-    }
-
-    fun onGameFinish() {
-        _eventGameFinish.value = true
-    }
-
 }
